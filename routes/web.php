@@ -18,12 +18,12 @@ Route::get('/', function () {
 });
 
 Route::get('/productlist', 'App\Http\Controllers\SessionCartController@index')->name('productlist');
-Route::get('/cartlist', 'App\Http\Controllers\SessionCartController@cartList')->name('cartlist');
+Route::get('/cartitems', 'App\Http\Controllers\SessionCartController@getCartItems')->name('cartitems');
 Route::post('/session_cart', 'App\Http\Controllers\SessionCartController@addCart')->name('session.cart');
 Route::post('/remove_cart_item', 'App\Http\Controllers\SessionCartController@removeCartItem')->name('remove.cart.item');
 Route::get('/checkout-view', 'App\Http\Controllers\SessionCartController@checkOutView')->name('checkout.view');
 Route::post('/save-order', 'App\Http\Controllers\SessionCartController@saveOrder')->name('save.order');
-
+// Route::get('/category-list', [App\Http\Controllers\CategoryController::class, 'categoryList'])->name('category.list');
 Route::middleware(['auth', 'role:admin|employee'])->group(function (){
 //Admin product routes
 Route::group(['prefix' => 'product'], function () {

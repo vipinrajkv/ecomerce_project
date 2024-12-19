@@ -40,12 +40,13 @@
         <form name="proceedCheckOut" method="POST" action="{{route('save.order')}}" id="proceedCheckOut">
          @csrf
           @if(!empty($userDetails)) 
-        @foreach ($userDetails as $userDetail)
+        {{-- @foreach ($userDetails as $userDetails) --}}
+      
           <div class="row">
             <div class="col-6 mb-3">
               <p class="mb-0">First name</p>
               <div class="form-outline">
-                <input type="text" id="typeText" name="first_name" value="{{ $userDetail->name ? $userDetail->name : '' }}" placeholder="First Name" class="form-control" />
+                <input type="text" id="typeText" name="first_name" value="{{ $userDetails->name ? $userDetails->name : '' }}" placeholder="First Name" class="form-control" />
                 @error('first_name')
                   <div class="alert alert-danger">{{ $message }}</div>
                 @enderror
@@ -55,7 +56,7 @@
             <div class="col-6">
               <p class="mb-0">Last name</p>
               <div class="form-outline">
-                <input type="text" id="typeText"  name="last_name" value="{{ $userDetail->last_name ? $userDetail->last_name : '' }}" placeholder="Last Name" class="form-control" />
+                <input type="text" id="typeText"  name="last_name" value="{{ $userDetails->last_name ? $userDetails->last_name : '' }}" placeholder="Last Name" class="form-control" />
                 @error('last_name')
                 <div class="alert alert-danger">{{ $message }}</div>
               @enderror
@@ -66,7 +67,7 @@
             <div class="col-6 mb-3">
               <p class="mb-0">Phone</p>
               <div class="form-outline">
-                <input type="tel" id="typePhone"  name="phone" value="{{ $userDetail->phone ? $userDetail->phone : '' }}" class="form-control" />
+                <input type="tel" id="typePhone"  name="phone" value="{{ $userDetails->phone ? $userDetails->phone : '' }}" class="form-control" />
                 @error('last_name')
                 <div class="alert alert-danger">{{ $message }}</div>
               @enderror
@@ -76,7 +77,7 @@
             <div class="col-6 mb-3">
               <p class="mb-0">Email</p>
               <div class="form-outline">
-                <input type="email" id="typeEmail"   name="email" value="{{ $userDetail->email ? $userDetail->email : '' }}" placeholder="example@gmail.com" class="form-control" />
+                <input type="email" id="typeEmail"   name="email" value="{{ $userDetails->email ? $userDetails->email : '' }}" placeholder="example@gmail.com" class="form-control" />
               @error('email')
                 <div class="alert alert-danger">{{ $message }}</div>
               @enderror
@@ -90,7 +91,7 @@
             <div class="col-sm-8 mb-3">
               <p class="mb-0">Address</p>
               <div class="form-outline">
-                <input type="text" name="address" value="{{ $userDetail->address ? $userDetail->email : '' }}" id="typeText" placeholder="Type here" class="form-control" />
+                <input type="text" name="address" value="{{ $userDetails->address ? $userDetails->email : '' }}" id="typeText" placeholder="Type here" class="form-control" />
               @error('address')
                 <div class="alert alert-danger">{{ $message }}</div>
               @enderror
@@ -116,7 +117,7 @@
             <div class="col-sm-4 col-6 mb-3">
               <p class="mb-0">Postal code</p>
               <div class="form-outline">
-                <input type="text"  name="pin_number" value="{{ $userDetail->pin_number ? $userDetail->pin_number : '' }}" id="typeText" class="form-control" />
+                <input type="text"  name="pin_number" value="{{ $userDetails->pin_number ? $userDetails->pin_number : '' }}" id="typeText" class="form-control" />
               @error('pin_number')
                 <div class="alert alert-danger">{{ $message }}</div>
               @enderror
@@ -166,7 +167,7 @@
             </div>
           </div>
 
-          @endforeach
+          {{-- @endforeach --}}
           @endif
           <div class="float-end">
             <button class="btn btn-light border">Cancel</button>
