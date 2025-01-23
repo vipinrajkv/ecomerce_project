@@ -1,73 +1,75 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Session;
 use Auth;
+
 /** Models */
+
 use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderList;
+use App\Services\SessionCartService;
 
-class SessionCartController extends Controller
+final class SessionCartController extends Controller
 {
-    private $user;
-    private $order;
-    private $orderList;
 
-    /**
-     * Undocumented function
-     */
     public function __construct(
-          User $user,
-          Order $order,
-          OrderList $orderList
-    )
-    {
-        $this->user = $user ;
-        $this->order = $order ;
-        $this->orderList = $orderList ;
-    }
+        protected readonly SessionCartService $sessionCartService,
+        protected readonly User $user,
+        protected readonly Order $order,
+        protected readonly OrderList $orderList
+    ) {}
 
     /**
      * Product List Page
      */
-    public function index(){
-        $productData = DB::table('tbl_product')->get();
-        $product = Session::get('Cart') ?: '';
+    public function index()
+    {
         // Session::flush('Cart');
-        
-        // return view('session_cart', ['productlist' =>$productData, 'productItems' => $product]);
-        return view('layouts.frontend.product', ['productlist' =>$productData, 'productItems' => $product]);
-        // return view('layouts.backend.adminHome', ['productlist' =>$productData, 'productItems' => $product]);
-
+        $data = $this->sessionCartService->getProductList();
+   
+        return view('layouts.frontend.product', [
+            'productlist' => $data['productList'],
+            'cartItems' => $data['cartData']
+        ]);
     }
 
     /**
      * Cart Listing
      * 
      */
-    public function getCartItems(){
+    public function getCartItems() {
+        $cartItems = Session::get('Cart') ?: [];
+        $html = view('layouts.frontend.cart_items', compact('cartItems'))->render();
 
+        return response()->json([
+            'status' => true,
+            'html' => $html,
+            'message' => 'Car details fetched successfully.',
+        ]);
     }
 
     /**
      * List Page
      */
-    public function cartList(){
+    public function cartList()
+    {
         // $productData = DB::table('tbl_product')->get();
- 
+
         $cartProduct = Session::get('Cart') ?: '';
         return view('cart_list', ['productItems' => $cartProduct]);
     }
 
-   /**
-    * Add Cart Items
-    *
-    * @param Request $request
-    * @return void
-    */
+    /**
+     * Add Cart Items
+     *
+     * @param Request $request
+     * @return void
+     */
     public function addCart(Request $request)
     {
         $productId = (int)$request->input('productId');
@@ -77,7 +79,7 @@ class SessionCartController extends Controller
 
         if (Session::has('Cart')) {
             $cartData = Session::get('Cart');
-            
+
             if (array_key_exists($productId, $cartData)) {
 
                 if ($cartData[$productId]['item_id'] === $productId) {
@@ -85,8 +87,13 @@ class SessionCartController extends Controller
                     $itemName = $cartData[$productId]['item_name'];
                     Session::forget('Cart');
                     session::put('Cart', $cartData);
-
-                    return response()->json(['status' => '"' . $itemName . '" Already Added to Cart']);
+                    $cartData = Session::get('Cart');
+                    $cartitemCount = count(array_keys($cartData));
+            
+                    return response()->json([
+                        'status' => '"' . $itemName . '" Already Added to Cart',
+                        'cartItemsCount' => $cartitemCount
+                    ]);
                 }
             } else {
                 $cartData = Session::get('Cart');
@@ -94,18 +101,25 @@ class SessionCartController extends Controller
                 $cartItems =  $cartData;
                 Session::forget('Cart');
                 session::put('Cart', $cartData);
+                $cartData = Session::get('Cart');
+                $cartitemCount = count(array_keys($cartData));
 
-                return response()->json(['status' => '"' . $productName . '" Added to cart']);
+                return response()->json([
+                    'status' => '"' . $productName . '" Added to cart',
+                    'cartItemsCount' => $cartitemCount
+                ]);
             }
         } else {
             $itemListArray[$productData->id] = $this->setCartData($productData, $productQty);
             $cartItems =  $itemListArray;
             session::put('Cart', $cartItems);
+            $cartData = Session::get('Cart');
+            $cartitemCount = count(array_keys($cartData));
 
             return response()->json(['status' => '"' . $productName . '" Added to cart']);
         }
     }
-    
+
     /**
      * Set Cart Data
      *
@@ -113,8 +127,9 @@ class SessionCartController extends Controller
      * @param integer $productQty
      * @return array
      */
-    protected function setCartData($productData, $productQty){
-    return $cart =  [
+    protected function setCartData($productData, $productQty)
+    {
+        return $cart =  [
             'item_id' => $productData->id,
             'item_name' => $productData->name,
             'item_price' => $productData->price,
@@ -138,15 +153,14 @@ class SessionCartController extends Controller
         if (Session::has('Cart')) {
 
             if (array_key_exists($productId, $cartData)) {
-                   $itemName = $cartData[$productId]['item_name'];
-                    unset($cartData[$productId]);
-                    Session::forget('Cart');
-                    session::put('Cart', $cartData);
+                $itemName = $cartData[$productId]['item_name'];
+                unset($cartData[$productId]);
+                Session::forget('Cart');
+                session::put('Cart', $cartData);
 
-                    return response()->json(['status' => '"' . $itemName . '" Already Added to Cart']);
+                return response()->json(['status' => '"' . $itemName . '" Already Added to Cart']);
             }
         }
-
     }
 
     /**
@@ -154,22 +168,27 @@ class SessionCartController extends Controller
      *
      * @return void
      */
-    public function checkOutView() { 
+    public function checkOutView()
+    {
         $cartProduct = Session::get('Cart') ?: '';
         $userData = Auth::user();
-        if(!empty($userData)) {
-        $userId = $userData->id;
-        $userDetails = $this->user->getLoggedUserDetails($userId);
+        
+        if (!empty($userData)) {
+            $userId = $userData->id;
+            // $userDetails = $this->user->getLoggedUserDetails($userId);
+            // $userDetails = $userData;
 
-        return view('layouts.frontend.check_out', 
-        [
-            'productItems' => $cartProduct,
-            'userDetails' => $userDetails,
-        ]);
-    }else{
-        return redirect()->route('login')
-                ->with('error','Email-Address And Password Are Wrong.');
-    }
+            return view(
+                'layouts.frontend.check_out',
+                [
+                    'productItems' => $cartProduct,
+                    'userDetails' => $userData,
+                ]
+            );
+        } else {
+            return redirect()->route('login')
+                ->with('error', 'Email-Address And Password Are Wrong.');
+        }
     }
 
     /**
@@ -184,27 +203,27 @@ class SessionCartController extends Controller
         $userData = Auth::user();
         $userId = $userData->id;
         // $this->validateCustomer($request);
- 
+
         DB::beginTransaction();
 
         try {
-            
+
             if (!empty($userId)) {
                 $this->updateCustomerDetails($userId, $request);
                 $orderId = $this->createOrder($userId, $request);
                 $orderStatus = $this->saveOrderListItems($userId, $orderId, $cartProducts);
-                
-                 if ($orderStatus !== 0) {
+
+                if ($orderStatus !== 0) {
                     $cartData = Session::get('Cart');
                     Session::forget('Cart');
-                 }
+                }
             }
             DB::commit();
 
             return redirect();
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->route('checkout.view')->withErrors($e->getMessage()); 
+            return redirect()->route('checkout.view')->withErrors($e->getMessage());
         }
     }
 
@@ -227,12 +246,12 @@ class SessionCartController extends Controller
                     'tax_amount' => 0,
                     'quantity' => $cartProduct['item_qty'],
                 ];
-             $this->orderList->createOrderList($orderItems, $userId);
+                $this->orderList->createOrderList($orderItems, $userId);
             }
-    }else{
+        } else {
 
-        return false;
-    }
+            return false;
+        }
     }
 
     /**
@@ -244,7 +263,7 @@ class SessionCartController extends Controller
      */
     protected function createOrder($userId, $request)
     {
-        $truckingNo = rand(1111,9999);
+        $truckingNo = rand(1111, 9999);
         $orderData =  [
             'user_id' => $userId,
             'trucking_number' => 'ecom' . $truckingNo,
@@ -253,7 +272,7 @@ class SessionCartController extends Controller
             'order_status' => 1,
         ];
 
-      return  $this->order->orderCreate($orderData, $userId);
+        return  $this->order->orderCreate($orderData, $userId);
     }
 
     /**
