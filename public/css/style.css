@@ -1224,6 +1224,10 @@ input:disabled{
   background-color:white;
 }
 
+.countButton{
+  border-radius:0rem;
+  background-color: #ebebeb;
+}
        
 
 http://kute-themes.com/html/boutique/html/index.html

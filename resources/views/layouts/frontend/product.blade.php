@@ -22,15 +22,32 @@
                            Add To Cart
                            </a>
                            <label name="add qty">Quantity</label>
-                           <input type="number" class="product-quantity" name="product_qty" value="">
+                           
+                           {{-- <input type="number" class="product-quantity" name="product_qty" value=""> --}}
                            <input type="hidden" class="product-id" name="productId" value="{{$productdata->id}}" />
                            <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#product_view"><i class="fa fa-search"></i> Quick View</button> -->
+                           <div class="input-group" style="width: 50%;">
+                              <span class="input-group-btn">
+                                  <button type="button" class="btn btn-default btn-number countButton" disabled="disabled" data-type="minus" data-field="quant[1]">
+                                      <span class="fa fa-minus"></span>
+                                  </button>
+                              </span>
+                              <input type="text" name="quant[1]" class="form-control input-number" value="8" min="8" max="30">
+                              <span class="input-group-btn">
+                                  <button type="button" class="btn btn-default btn-number countButton" data-type="plus" data-field="quant[1]">
+                                      <span class="fa fa-plus"></span>
+                                  </button>
+                              </span>
+                          </div>
                         </div>
+                     
                      </div>
                      <div class="img-box">
                         <img src="{{ asset('images/'.$productdata->image) }}" alt="">
+                        
                      </div>
                      <div class="detail-box">
+                        
                         <h5>
                            {{ $productdata->name }}
                         </h5>
